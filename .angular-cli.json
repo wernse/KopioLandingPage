@@ -47,7 +47,7 @@
   ],
   "test": {
     "karma": {
-      "config": "./karma.co nf.js"
+      "config": "./karma.conf.js"
     }
   },
   "defaults": {

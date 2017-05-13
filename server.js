@@ -4,24 +4,21 @@ const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 const morgan = require('morgan')
-const api = require('./server/routes/user.route');
-const apiTest = require('./server/routes/test.route');
 const app = express();
 let config = require('./server/config.js');
 const mongoose = require('mongoose');    
-
 require('dotenv').config()
 
+//Mongoose Setup
 let options = { 
                 server: { socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 } }, 
                 replset: { socketOptions: { keepAlive: 1, connectTimeoutMS : 30000 } } 
               }; 
-
-//db connection      
-console.log(config.mongodb.url)
+mongoose.Promise = global.Promise;
 mongoose.connect(config.mongodb.url, options);
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
+var conn = mongoose.connection;
+conn.on('error', console.error.bind(console, 'connection error:'));
+
 // Parsers for POST data
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({ type: 'application/json'}));
@@ -29,12 +26,15 @@ app.use(bodyParser.json({ type: 'application/json'}));
 // Point static path to dist
 app.use(express.static(path.join(__dirname, 'dist')));
 
-if(process.env.NODE_ENV !== 'dev'){
+console.log("process.env.NODE_ENV: ", process.env.NODE_ENV)
+if(process.env.NODE_ENV !== 'test'){
   app.use(morgan('combined')); //'combined' outputs the Apache style LOGs
 }
 
+const api = require('./server/routes/user.route');
+const bookRoute = require('./server/routes/book');
 app.use('/api/user', api);
-app.use('/api/test', apiTest);
+app.use('/api/book', bookRoute);
 
 // Catch all other routes and return the index file
 app.get('*', (req, res) => {
